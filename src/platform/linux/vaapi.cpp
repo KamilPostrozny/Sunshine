@@ -344,9 +344,10 @@ namespace va {
       // single frame VBV ensures that we don't have large bitrate overshoots (at least
       // as much as they can be avoided without pre-analysis).
       //
-      // When we have to resort to the default 1 second VBV for encoding quality reasons,
-      // we stick to CBR in order to avoid encoding huge frames after bitrate undershoots
-      // leave headroom available in the RC window.
+      // vaapi_strict_rc_buffer (enabled by default: every Stream is a low-latency Stream) gives the
+      // other configurations, such as H.264 and HEVC on AMD, the same single frame VBV. Disabling it
+      // falls back to FFmpeg's 1 second VBV, where we stick to CBR in order to avoid encoding huge
+      // frames after bitrate undershoots leave headroom available in the RC window.
       //
       // If a user-supplied rate control is detected, override the whitelist logic to allow
       // full user control of both the rate control and strict VBV settings.

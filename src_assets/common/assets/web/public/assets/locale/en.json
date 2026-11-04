@@ -455,7 +455,7 @@
     "vaapi_rc_qvbr": "qvbr -- quality-defined variable bitrate",
     "vaapi_rc_vbr": "vbr -- variable bitrate",
     "vaapi_strict_rc_buffer": "Strictly enforce frame bitrate limits for H.264/HEVC on AMD GPUs",
-    "vaapi_strict_rc_buffer_desc": "Enabling this option can avoid dropped frames over the network during scene changes, but video quality may be reduced during motion.",
+    "vaapi_strict_rc_buffer_desc": "Enabled by default, because every Stream is a low-latency Stream: large frames stay within one frame's share of the bitrate instead of arriving in multi-frame bursts. Disabling it can improve video quality during motion, but large frames may then be delayed or dropped over the network during scene changes.",
     "vk_rc_cbr": "CBR (Constant Bitrate) (default)",
     "vk_rc_cqp": "CQP (Constant QP)",
     "vk_rc_mode": "Rate Control",

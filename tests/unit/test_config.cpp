@@ -80,6 +80,13 @@ TEST(ConfigDefaultsTest, PreservesAmdEncoderNumericDefaults) {
   EXPECT_EQ(config::video.amd.amd_coder, 0);
 }
 
+/**
+ * @brief Every Stream is a low-latency Stream, so VA-API H.264 and HEVC default to a single frame VBV.
+ */
+TEST(ConfigDefaultsTest, UsesSingleFrameVaapiRateControlBuffer) {
+  EXPECT_TRUE(config::video.vaapi.strict_rc_buffer);
+}
+
 using NvencPresetNameParam = std::pair<int, std::string_view>;
 
 /**
@@ -218,6 +225,22 @@ TEST_F(ConfigPersistenceTest, ParsesFp16SdrGammaEncodedOption) {
 
   config::apply_config_for_test("fp16_sdr_gamma_encoded = disabled\n");
   EXPECT_FALSE(config::video.fp16_sdr_gamma_encoded);
+}
+
+TEST_F(ConfigPersistenceTest, AllowsDisablingStrictVaapiRateControlBuffer) {
+  const auto original_video = config::video;
+  const auto restore_video = util::fail_guard([original_video]() {
+    config::video = original_video;
+  });
+  const auto apps_file = config_file().parent_path() / "sunshine_test_config_apps.json";
+  ASSERT_EQ(file_handler::write_file(apps_file.string().c_str(), "{}"), 0);
+  config::stream.file_apps = apps_file.string();
+
+  config::apply_config_for_test("vaapi_strict_rc_buffer = disabled\n");
+  EXPECT_FALSE(config::video.vaapi.strict_rc_buffer);
+
+  config::apply_config_for_test("vaapi_strict_rc_buffer = enabled\n");
+  EXPECT_TRUE(config::video.vaapi.strict_rc_buffer);
 }
 
 /**
