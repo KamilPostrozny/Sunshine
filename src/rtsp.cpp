@@ -25,6 +25,7 @@ extern "C" {
 #include "config.h"
 #include "globals.h"
 #include "input.h"
+#include "latency_protocol.h"
 #include "logging.h"
 #include "network.h"
 #include "rtsp.h"
@@ -875,7 +876,7 @@ namespace rtsp_stream {
     std::stringstream ss;
 
     // Tell the client about our supported features
-    ss << "a=x-ss-general.featureFlags:" << (uint32_t) platf::get_capabilities() << std::endl;
+    ss << "a=x-ss-general.featureFlags:" << latency_protocol::advertise((uint32_t) platf::get_capabilities()) << std::endl;
 
     // Always request new control stream encryption if the client supports it
     uint32_t encryption_flags_supported = SS_ENC_CONTROL_V2 | SS_ENC_AUDIO;
@@ -1105,6 +1106,9 @@ namespace rtsp_stream {
       config.packetsize = (int) util::from_view(args.at("x-nv-video[0].packetSize"sv));
       config.minRequiredFecPackets = (int) util::from_view(args.at("x-nv-vqos[0].fec.minRequiredFecPackets"sv));
       config.mlFeatureFlags = (int) util::from_view(args.at("x-ml-general.featureFlags"sv));
+      if (latency_protocol::negotiated((uint32_t) config.mlFeatureFlags)) {
+        BOOST_LOG(info) << "Latency protocol negotiated"sv;
+      }
       config.audioQosType = (int) util::from_view(args.at("x-nv-aqos.qosTrafficType"sv));
       config.videoQosType = (int) util::from_view(args.at("x-nv-vqos[0].qosTrafficType"sv));
       config.encryptionFlagsEnabled = (uint32_t) util::from_view(args.at("x-ss-general.encryptionEnabled"sv));

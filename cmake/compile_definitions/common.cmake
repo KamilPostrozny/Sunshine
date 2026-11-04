@@ -175,6 +175,7 @@ set(SUNSHINE_TARGET_FILES
         "${CMAKE_SOURCE_DIR}/src/video_colorspace.h"
         "${CMAKE_SOURCE_DIR}/src/input.cpp"
         "${CMAKE_SOURCE_DIR}/src/input.h"
+        "${CMAKE_SOURCE_DIR}/src/latency_protocol.h"
         "${CMAKE_SOURCE_DIR}/src/audio.cpp"
         "${CMAKE_SOURCE_DIR}/src/audio.h"
         "${CMAKE_SOURCE_DIR}/src/platform/common.h"
@@ -246,3 +247,11 @@ else()
     message(STATUS "Tray icon disabled")
 endif()
 list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_TRAY=${SUNSHINE_TRAY})
+
+# latency protocol (fork extension)
+if(SUNSHINE_ENABLE_LATENCY_PROTOCOL)
+    list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_LATENCY_PROTOCOL=1)
+else()
+    list(APPEND SUNSHINE_DEFINITIONS SUNSHINE_LATENCY_PROTOCOL=0)
+    message(STATUS "Latency protocol disabled")
+endif()

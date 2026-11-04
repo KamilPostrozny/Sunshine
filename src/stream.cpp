@@ -28,6 +28,7 @@ extern "C" {
 #include "display_device.h"
 #include "globals.h"
 #include "input.h"
+#include "latency_protocol.h"
 #include "logging.h"
 #include "network.h"
 #include "platform/common.h"
@@ -1195,6 +1196,17 @@ namespace stream {
   void controlBroadcastThread(control_server_t *server) {
     server->map(packetTypes[IDX_PERIODIC_PING], [](session_t *session, const std::string_view &payload) {
       BOOST_LOG(verbose) << "type [IDX_PERIODIC_PING]"sv;
+    });
+
+    server->map(latency_protocol::message_type, [](session_t *session, const std::string_view &payload) {
+      // Latency messages only travel on the encrypted control stream of a session that negotiated them
+      if (!latency_protocol::negotiated((uint32_t) session->config.mlFeatureFlags) || !(session->config.encryptionFlagsEnabled & SS_ENC_CONTROL_V2)) {
+        BOOST_LOG(debug) << "Dropping latency message: not negotiated for this session"sv;
+        return;
+      }
+
+      // The payload is opaque here; nothing interprets it yet
+      BOOST_LOG(verbose) << "type [latency] "sv << payload.size() << " bytes"sv;
     });
 
     server->map(packetTypes[IDX_START_A], [&](session_t *session, const std::string_view &payload) {

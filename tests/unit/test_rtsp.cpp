@@ -20,6 +20,7 @@ extern "C" {
 
 // local includes
 #include <src/audio.h>
+#include <src/latency_protocol.h>
 #include <src/rtsp.h>
 
 /**
@@ -164,4 +165,33 @@ TEST(RtspDescribeTest, SurroundParamsCompensateClientRotationForEveryStreamConfi
   for (std::size_t x = 0; x < expected.size(); ++x) {
     EXPECT_EQ(advertised[x], expected[x].second) << "stream config " << expected[x].first;
   }
+}
+
+/**
+ * @brief DESCRIBE advertises the latency protocol in the host feature flags exactly when the build speaks it.
+ */
+TEST(RtspDescribeTest, AdvertisesTheLatencyProtocolOnlyWhenBuiltWithIt) {
+  using boost::asio::ip::tcp;
+
+  boost::asio::io_context io;
+  tcp::acceptor acceptor {io, {boost::asio::ip::address_v4::loopback(), 0}};
+  tcp::socket client {io};
+  client.connect(acceptor.local_endpoint());
+  auto server_socket = acceptor.accept();
+
+  rtsp_stream::launch_session_t session {};
+  rtsp_stream::msg_t request {new RTSP_MESSAGE {}};
+  rtsp_stream::cmd_describe(nullptr, server_socket, session, std::move(request));
+  server_socket.shutdown(tcp::socket::shutdown_send);
+
+  std::string response;
+  boost::system::error_code read_error;
+  boost::asio::read(client, boost::asio::dynamic_buffer(response), read_error);
+  ASSERT_EQ(read_error, boost::asio::error::eof);
+
+  const std::string prefix = "a=x-ss-general.featureFlags:";
+  const auto start = response.find(prefix);
+  ASSERT_NE(start, std::string::npos);
+  const auto flags = std::stoul(response.substr(start + prefix.size()));
+  EXPECT_EQ((flags & latency_protocol::host_feature_flag) != 0, latency_protocol::built);
 }
