@@ -3306,19 +3306,24 @@ consent prompt for directory ACLs, so the Web UI shows setup steps for correctin
         <td colspan="2">
             Enabling this option can avoid dropped frames over the network during scene changes, but video quality may
             be reduced during motion.
+            Every Stream is a low-latency Stream: Sunshine has no recording or quality-first sessions, and NVENC as
+            well as VA-API with AV1 or on Intel GPUs already limit each frame to one frame's share of the bitrate. This
+            option is therefore enabled by default, so H.264 and HEVC on AMD GPUs get the same single frame VBV instead of
+            FFmpeg's one second VBV, which lets large frames arrive in multi-frame bursts. Disable it to restore the
+            one second VBV.
             @note{This option only applies for H.264 and HEVC when using VA-API [encoder](#encoder) on AMD GPUs (or when overriding the default rate control on other devices).}
         </td>
     </tr>
     <tr>
         <td>Default</td>
         <td colspan="2">@code{}
-            disabled
+            enabled
             @endcode</td>
     </tr>
     <tr>
         <td>Example</td>
         <td colspan="2">@code{}
-            vaapi_strict_rc_buffer = enabled
+            vaapi_strict_rc_buffer = disabled
             @endcode</td>
     </tr>
 </table>

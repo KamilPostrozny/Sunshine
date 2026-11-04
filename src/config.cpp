@@ -788,7 +788,7 @@ namespace config {
       std::to_underlying(vaapi::quality_e::_auto),  // quality
       std::to_underlying(vaapi::rc_e::_auto),  // rate control
       {},  // rate control string
-      false,  // strict_rc_buffer
+      true,  // strict_rc_buffer: every Stream is low-latency, so H.264/HEVC get a single frame VBV like NVENC and AV1
     },  // vaapi
 
     {
